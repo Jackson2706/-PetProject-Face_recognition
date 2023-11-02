@@ -1,7 +1,7 @@
 import os
-import pickle
 
 import cv2
+import joblib
 import numpy as np
 
 data_dir = "./dataset"
@@ -32,12 +32,15 @@ else:
         face_coordinates = facecascade.detectMultiScale(gray_scale, 1.3, 4)
 
         for x1, y1, w, h in face_coordinates:
-            face_images = frame[x1 : x1 + w, y1 : y1 + h]
+            face_images = frame[y1 : y1 + h, x1 : x1 + w, :]
             resized_face_images = cv2.resize(face_images, (50, 50))
+
+            cv2.rectangle(frame, (x1, y1), (x1 + w, y1 + h), (0, 255, 0), 2)
 
             if (i - 10) and len(face_data) < 10:
                 face_data.append(resized_face_images)
-            cv2.rectangle(frame, (x1, y1), (x1 + w, y1 + h), (0, 255, 0), 2)
+            else:
+                break
 
         cv2.imshow("frames", frame)
 
@@ -46,29 +49,29 @@ else:
 cap.release()
 cv2.destroyAllWindows()
 
-try:
-    face_data = np.asarray(face_data)
-    face_data = face_data.reshape(10, -1)
 
-    if "name.pkl" not in os.listdir(data_dir):
-        names = [name] * 10
-        with open(data_dir + "/name.pkl", "wb") as file:
-            pickle.dump(names, file)
+face_data = np.asarray(face_data)
+face_data = face_data.reshape(10, -1)
+if "names.pkl" not in os.listdir(data_dir):
+    names = [name] * 10
+    with open(data_dir + "/names.pkl", "wb") as file:
+        joblib.dump(names, file)
 
-    else:
-        with open(data_dir + "/name.pkl", "wb") as file:
-            names = pickle.load(file)
-            names = names + [name] * 10
-            pickle.dump(names, file)
+else:
+    with open(data_dir + "/names.pkl", "rb") as file:
+        names = joblib.load(file)
 
-    if "faces.pkl" not in os.listdir(data_dir):
-        with open(data_dir + "/faces.pkl", "wb") as file:
-            pickle.dump(face_data, file)
+    with open(data_dir + "/names.pkl", "wb") as file:
+        names = names + [name] * 10
+        joblib.dump(names, file)
 
-    else:
-        with open(data_dir + "/faces.pkl", "wb") as file:
-            faces = pickle.load(file)
-            faces = np.append(faces, face_data, 0)
-            pickle.dump(faces, file)
-except:
-    print("Failed to create new data")
+if "faces.pkl" not in os.listdir(data_dir):
+    with open(data_dir + "/faces.pkl", "wb") as file:
+        joblib.dump(face_data, file)
+
+else:
+    with open(data_dir + "/faces.pkl", "rb") as file:
+        faces = joblib.load(file)
+    with open(data_dir + "/faces.pkl", "wb") as file:
+        faces = np.append(faces, face_data, 0)
+        joblib.dump(faces, file)
