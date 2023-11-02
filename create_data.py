@@ -46,27 +46,29 @@ else:
 cap.release()
 cv2.destroyAllWindows()
 
+try:
+    face_data = np.asarray(face_data)
+    face_data = face_data.reshape(10, -1)
 
-face_data = np.asarray(face_data)
-face_data = face_data.reshape(10, -1)
+    if "name.pkl" not in os.listdir(data_dir):
+        names = [name] * 10
+        with open(data_dir + "/name.pkl", "wb") as file:
+            pickle.dump(names, file)
 
-if "name.pkl" not in os.listdir(data_dir):
-    names = [name] * 10
-    with open(data_dir + "/name.pkl", "wb") as file:
-        pickle.dump(names, file)
+    else:
+        with open(data_dir + "/name.pkl", "wb") as file:
+            names = pickle.load(file)
+            names = names + [name] * 10
+            pickle.dump(names, file)
 
-else:
-    with open(data_dir + "/name.pkl", "wb") as file:
-        names = pickle.load(file)
-        names = names + [name] * 10
-        pickle.dump(names, file)
+    if "faces.pkl" not in os.listdir(data_dir):
+        with open(data_dir + "/faces.pkl", "wb") as file:
+            pickle.dump(face_data, file)
 
-if "faces.pkl" not in os.listdir(data_dir):
-    with open(data_dir + "/faces.pkl", "wb") as file:
-        pickle.dump(face_data, file)
-
-else:
-    with open(data_dir + "/faces.pkl", "wb") as file:
-        faces = pickle.load(file)
-        faces = np.append(faces, face_data, 0)
-        pickle.dump(faces, file)
+    else:
+        with open(data_dir + "/faces.pkl", "wb") as file:
+            faces = pickle.load(file)
+            faces = np.append(faces, face_data, 0)
+            pickle.dump(faces, file)
+except:
+    print("Failed to create new data")
