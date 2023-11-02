@@ -19,7 +19,7 @@ i = 0
 if not cap.isOpened():
     print(f"Unable to open camera")
 else:
-    name = input("Enter name: -->")
+    name = input("Enter name: -->\t")
     while True:
         ret, frame = cap.read()
         if not ret:
